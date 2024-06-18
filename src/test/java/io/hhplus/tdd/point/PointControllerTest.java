@@ -1,6 +1,6 @@
 package io.hhplus.tdd.point;
 
-import io.hhplus.tdd.service.PointServiceStub;
+import io.hhplus.tdd.service.UserPointService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
@@ -19,7 +19,7 @@ class PointControllerTest {
   private MockMvc mockMvc;
 
   @MockBean
-  private PointServiceStub pointServiceStub;
+  private UserPointService userPointService;
 
   @Test
   void point() {
@@ -45,7 +45,7 @@ class PointControllerTest {
     long userId = 1L;
     UserPoint userPoint = new UserPoint(userId, 100, 50);
 
-    when(pointServiceStub.getPoint(userId)).thenReturn(userPoint);
+    when(userPointService.getPoint(userId)).thenReturn(userPoint);
 
     mockMvc.perform(get("/point/{id}", userId))
       .andExpect(status().isOk())
