@@ -1,10 +1,35 @@
 package io.hhplus.tdd.point;
 
+import io.hhplus.tdd.service.UserPointService;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.web.servlet.MockMvc;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(PointController.class)
 class PointControllerTest {
+  @Autowired
+  private MockMvc mockMvc;
+  @MockBean
+  private UserPointService userpointService;
+
+//  @BeforeEach
+//  void setUp() {
+//    UserPointTable userPointTable = new UserPointTable();
+//    userpointService = new UserPointService(userPointTable); // 실제 구현체 초기화
+//  }
+
+
   @Test
   void point() {
     // Params - need validation
@@ -23,6 +48,53 @@ class PointControllerTest {
     // (Case) 존재하는 사용자 ID로 조회했을 때, UserPoint 반환 확인
     // (Case) 존재하지 않는 사용자 ID로 조회했을 때, 기본값이 반환되는지 확인
   }
+
+  @ParameterizedTest
+  @ValueSource(strings = {" ", "abc"})
+  void invalidUserId_shouldThrowException(String userId) {
+    assertThrows(NumberFormatException.class, () -> userpointService.getPoint(Long.parseLong(userId)));
+  }
+
+  @ParameterizedTest
+  @ValueSource(strings = {""})
+  void emptyStringUserId_shouldThrowException(String userId) {
+    assertThrows(IllegalArgumentException.class, () -> userpointService.getPoint(Long.parseLong(userId)));
+  }
+
+  @Test
+  void nullUserId_shouldThrowException() {
+//    assertThrows(NullPointerException.class, () -> userpointService.getPoint(null));
+    assertThrows(IllegalArgumentException.class, () -> userpointService.getPoint(null));
+
+  }
+
+  @Test
+  void validUserId_shouldReturnUserPoint() {
+    // 존재하는 유저 ID 예시
+    long existingUserId = 1234L;
+    UserPoint expectedUserPoint = new UserPoint(existingUserId, 100L, 11234L);
+
+    UserPoint actualUserPoint = userpointService.getPoint(existingUserId);
+    assertEquals(expectedUserPoint, actualUserPoint);
+  }
+
+  @Test
+  void nonExistingUserId_shouldReturnDefaultUserPoint() {
+    // 존재하지 않는 유저 ID 예시
+    // given
+    long nonExistingUserId = 5678L;
+    UserPoint expectedDefaultUserPoint = UserPoint.empty(nonExistingUserId);
+
+    // when
+    UserPoint actualUserPoint = userpointService.getPoint(nonExistingUserId);
+
+    // then
+    // updateMillis까지 비교하려니, System.currentTimeMillis() 때문에 계속 다르게 됨.
+//    assertEquals(expectedDefaultUserPoint, actualUserPoint);
+    assertEquals(expectedDefaultUserPoint.id(), actualUserPoint.id());
+    assertEquals(expectedDefaultUserPoint.point(), actualUserPoint.point());
+  }
+
 
 
   @Test
