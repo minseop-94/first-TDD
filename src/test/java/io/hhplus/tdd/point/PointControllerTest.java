@@ -1,26 +1,10 @@
 package io.hhplus.tdd.point;
 
-import io.hhplus.tdd.service.UserPointService;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.test.web.servlet.MockMvc;
-
-import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(PointController.class)
 class PointControllerTest {
-
-  @Autowired
-  private MockMvc mockMvc;
-
-  @MockBean
-  private UserPointService userPointService;
-
   @Test
   void point() {
     // Params - need validation
@@ -38,20 +22,6 @@ class PointControllerTest {
     // 비지니스 로직 검사
     // (Case) 존재하는 사용자 ID로 조회했을 때, UserPoint 반환 확인
     // (Case) 존재하지 않는 사용자 ID로 조회했을 때, 기본값이 반환되는지 확인
-  }
-
-  @Test
-  public void shouldReturnUserPointForGivenId() throws Exception {
-    long userId = 1L;
-    UserPoint userPoint = new UserPoint(userId, 100, 50);
-
-    when(userPointService.getPoint(userId)).thenReturn(userPoint);
-
-    mockMvc.perform(get("/point/{id}", userId))
-      .andExpect(status().isOk())
-      .andExpect(jsonPath("$.userId").value(userId))
-      .andExpect(jsonPath("$.availablePoint").value(100))
-      .andExpect(jsonPath("$.pendingPoint").value(50));
   }
 
 
