@@ -1,9 +1,10 @@
 package io.hhplus.tdd.point;
 
+import io.hhplus.tdd.exception.CustomException;
 import io.hhplus.tdd.service.PointService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -11,21 +12,26 @@ import java.util.List;
 @RestController
 @RequestMapping("/point")
 public class PointController {
-
+    private final PointService pointService;
     private static final Logger log = LoggerFactory.getLogger(PointController.class);
 
-    @Autowired
-    private PointService pointService;
+    public PointController(PointService pointService) {
+      this.pointService = pointService;
+    }
 
   /**
-     * TODO - 특정 유저의 포인트를 조회하는 기능을 작성해주세요.
-     */
+   * TODO - 특정 유저의 포인트를 조회하는 기능을 작성해주세요.
+   */
     @GetMapping("{id}")
-    public UserPoint point(
-            @PathVariable long id
+    public ResponseEntity<UserPoint> point(
+        @PathVariable(name = "id") Long id
     ) {
-        return pointService.getPoint(id);
-
+      if (String.valueOf(id).isBlank() || !String.valueOf(id).matches("\\d+")) {
+        throw new CustomException("400", "Invalid user ID");
+//        throw new IllegalArgumentException("Invalid user ID");
+      }
+      UserPoint userPoint = pointService.getPoint(id);
+      return ResponseEntity.ok(userPoint);
     }
 
     /**
