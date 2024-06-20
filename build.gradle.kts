@@ -27,7 +27,7 @@ dependencies {
     annotationProcessor(libs.lombok)
     annotationProcessor(libs.spring.boot.configuration.processor)
     testImplementation(libs.spring.boot.starter.test)
-    testImplementation("org.assertj:assertj-core:3.23.1")
+//    testImplementation("org.assertj:assertj-core:3.23.1")
 }
 
 // about source and compilation
