@@ -1,6 +1,7 @@
 package io.hhplus.tdd.service;
 
 import io.hhplus.tdd.database.UserPointTable;
+import io.hhplus.tdd.exception.InsufficientBalanceException;
 import io.hhplus.tdd.point.UserPoint;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -128,6 +129,23 @@ class PointServiceTest {
     // then
     assertEquals(initialUserPoint.point() - usePointAmount, result.point());
   }
+
+  @Test
+    public void use_insufficientBalance_throwsExceptionOrReturnsError() {
+        // given
+        long userId = 1L;
+        long usePointAmount = 2000L; // 잔액보다 큰 금액
+        UserPoint initialUserPoint = new UserPoint(userId, 1000L, 1500L);
+
+        // when
+        when(userPointTable.selectById(userId)).thenReturn(initialUserPoint);
+
+        // when & then
+        assertThrows(
+            InsufficientBalanceException.class,
+            () -> pointService.use(userId, usePointAmount)
+        );
+    }
 
 
 }

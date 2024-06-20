@@ -1,6 +1,7 @@
 package io.hhplus.tdd.service;
 
 import io.hhplus.tdd.database.UserPointTable;
+import io.hhplus.tdd.exception.InsufficientBalanceException;
 import io.hhplus.tdd.point.UserPoint;
 import org.springframework.stereotype.Service;
 
@@ -29,6 +30,8 @@ public class PointService {
     if(point <= 0) throw new IllegalArgumentException();
 
     UserPoint originPoint = userPointTable.selectById(userId);
+
+    if (point > originPoint.point()) throw new InsufficientBalanceException();
     return userPointTable.insertOrUpdate(userId, originPoint.point() - point);
   }
 }
