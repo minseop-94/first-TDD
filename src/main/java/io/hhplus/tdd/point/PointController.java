@@ -1,9 +1,11 @@
 package io.hhplus.tdd.point;
 
 import io.hhplus.tdd.exception.CustomException;
+import io.hhplus.tdd.service.PointHistoryService;
 import io.hhplus.tdd.service.PointService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -12,12 +14,15 @@ import java.util.List;
 @RestController
 @RequestMapping("/point")
 public class PointController {
-    private final PointService pointService;
-    private static final Logger log = LoggerFactory.getLogger(PointController.class);
+  private final PointService pointService;
+  private PointHistoryService pointHistoryService;
+  private static final Logger log = LoggerFactory.getLogger(PointController.class);
 
-    public PointController(PointService pointService) {
-      this.pointService = pointService;
-    }
+  @Autowired // Spring이 해당 생성자를 통해 PointService를 주입하도록 설정
+  public PointController(PointService pointService, PointHistoryService pointHistoryService) {
+    this.pointService = pointService;
+    this.pointHistoryService = pointHistoryService;
+  }
 
   /**
    * TODO - 특정 유저의 포인트를 조회하는 기능을 작성해주세요.
@@ -37,11 +42,16 @@ public class PointController {
     /**
      * TODO - 특정 유저의 포인트 충전/이용 내역을 조회하는 기능을 작성해주세요.
      */
+    @ExceptionHandler(IllegalArgumentException.class)
     @GetMapping("{id}/histories")
     public List<PointHistory> history(
-            @PathVariable long id
+            @PathVariable(name = "id") Long id
+//            @PathVariable long id
     ) {
-        return List.of();
+      if (id == null) {
+        throw new IllegalArgumentException("id cannot be null");
+      }
+      return pointHistoryService.getPointHistories(id);
     }
 
     /**
