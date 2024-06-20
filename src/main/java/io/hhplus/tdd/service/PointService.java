@@ -25,4 +25,10 @@ public class PointService {
   }
 
 
+  public UserPoint use(long userId, long point) {
+    if(point <= 0) throw new IllegalArgumentException();
+
+    UserPoint originPoint = userPointTable.selectById(userId);
+    return userPointTable.insertOrUpdate(userId, originPoint.point() - point);
+  }
 }

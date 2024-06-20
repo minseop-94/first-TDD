@@ -202,24 +202,25 @@ class PointControllerTest {
     }
 
     @Test
-    void use() {
-        // Params - need validation
-        long userId;
-        long costPointAmount;
+    void use() throws Exception {
+        // given (테스트 데이터 준비)
+        long userId = 1L;
+        long point = 1000L;
+        ResponseEntity<UserPoint> expectedResponse = ResponseEntity.ok(new UserPoint(userId, point, 0L));
 
-        // [Success]
-        // (Case) 유효한 userId, 유효한 costPointAmount 로 포인트를 사용할 때: 특정 유저의 포인트를 차감
+        // Mocking the service behavior
+        when(pointService.use(userId, point)).thenReturn(expectedResponse.getBody());
+
+        // when
+        mockMvc.perform(patch("/point/{id}/use", userId)
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(String.valueOf(point)))
+          // then (응답 검증)
+          .andExpect(status().isOk())
+          .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+          .andExpect(jsonPath("$.id").value(userId))
+          .andExpect(jsonPath("$.point").value(point));
 
 
-        // [Fail]
-        // costPointAmount 유효성 검사
-        // (Case) -1과 같이 음수 사용자 ID로 포인트를 충전할 때: IllegalArgumentException 발생
-        // (Case) 0 충전 포인트 금액으로 포인트를 충전할 때: IllegalArgumentException 발생
-        // (Case) -500과 같이 음수 충전 포인트 금액으로 포인트를 충전할 때: IllegalArgumentException 발생
-
-        // (Case) 사용자의 사용 가능 포인트가 사용 금액만큼 감소하는지 확인한다.
-        // (Case) 사용 내역이 데이터베이스 또는 저장소에 정확하게 기록되는지 확인한다.
-        // (Case) 성공 응답과 함께 사용 후 포인트 정보를 반환하는지 확인한다.
-        // (Case) 사용 가능 포인트가 부족할 경우 예외가 발생하거나 에러 응답을 반환하는지 확인한다.
     }
 }

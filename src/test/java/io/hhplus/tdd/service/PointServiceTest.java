@@ -73,7 +73,7 @@ class PointServiceTest {
     assertThrows(IllegalArgumentException.class, () -> pointService.charge(userId, negativeAmount));
   }
 
-  // TODO(loso): 이게 테스트로서 의미가 있나? 더한 값들이 return되게 결정되어 있는데? 
+  // TODO(loso): 이게 테스트로서 의미가 있나? 더한 값들이 return되게 결정되어 있는데?
   @Test
   public void charge_positiveAmount_increasesBalanceAndTotal() {
     // given
@@ -93,6 +93,40 @@ class PointServiceTest {
 
     // then
     assertEquals(updatedUserPoint, result);
+  }
+
+  //  포인트 사용시
+  // (Case) 사용 포인트가 음수일 경우, 예외 발생
+  // (Case) 사용자의 사용 가능 포인트가 사용 금액만큼 감소하는지 확인한다.
+  // (Case) 사용 가능 포인트가 부족할 경우 예외가 발생하거나 에러 응답을 반환하는지 확인한다.
+
+      @Test
+    public void use_negativeAmount_throwsIllegalArgumentException() {
+        // given
+        long userId = 1L;
+        long negativeAmount = -500L;
+
+        // when & then
+        assertThrows(IllegalArgumentException.class, () -> pointService.use(userId, negativeAmount));
+    }
+
+  @Test
+  public void use_sufficientBalance_decreasesAvailablePoints() {
+    // given
+    long userId = 1L;
+    long usePointAmount = 500L;
+    UserPoint initialUserPoint = new UserPoint(userId, 1000L, 0);
+
+    // when
+    when(userPointTable.selectById(userId)).thenReturn(initialUserPoint);
+
+    // Corrected mock behavior for insertOrUpdate
+    UserPoint updatedUserPoint = new UserPoint(userId, initialUserPoint.point() - usePointAmount, 0);
+    when(userPointTable.insertOrUpdate(userId, initialUserPoint.point() - usePointAmount)).thenReturn(updatedUserPoint);
+    UserPoint result = pointService.use(userId, usePointAmount);
+
+    // then
+    assertEquals(initialUserPoint.point() - usePointAmount, result.point());
   }
 
 
