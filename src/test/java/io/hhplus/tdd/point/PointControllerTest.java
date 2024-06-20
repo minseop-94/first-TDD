@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
@@ -15,8 +16,8 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest(PointController.class)
 class PointControllerTest {
@@ -173,24 +174,31 @@ class PointControllerTest {
 
     @Test
     void charge() {
-        // Params - need validation
-        long userId;
-        long chargePointAmount;
+       // [Success]
+        // (Case) 유효한 RequesetDto -> ResponseDto
+        // (Case) 유효한 생태 HttpStatus.OK 확인
+        // (Case) Application/Json 응답 타입 확인
+    }
 
-        // [Success]
-        // (Case) 유효한 userId, 유효한 pointAmount 로 포인트를 충전할 때: 특정 유저의 포인트를 충전
+    @Test
+    public void charge_success_valid_request() throws Exception {
+        // given (테스트 데이터 준비)
+        long userId = 1L;
+        long chargePointAmount = 1000L;
+        ResponseEntity<UserPoint> expectedResponse = ResponseEntity.ok(new UserPoint(userId, 1000L, 0L));
 
-        // [Fail]
-        // chargePointAmount 유효성 검사
-        // (Case) -1과 같이 음수 사용자 ID로 포인트를 충전할 때: IllegalArgumentException 발생
-        // (Case) 0 충전 포인트 금액으로 포인트를 충전할 때: IllegalArgumentException 발생
-        // (Case) -500과 같이 음수 충전 포인트 금액으로 포인트를 충전할 때: IllegalArgumentException 발생
+        // Mocking the service behavior
+        when(pointService.charge(userId, chargePointAmount)).thenReturn(expectedResponse.getBody());
 
-        // 비지니스 로직
-        // (Case) 존재하는 사용자 ID로 조회했을 때, 올바른 UserPoint 반환 확인
-        // (Case) 포인트 잔액과 충전 포인트 총액이 올바르게 증가하는지 확인
-        // (Case) 충전 내역(PointHistory)이 올바르게 기록되는지 확인
-        // (Case) 존재하지 않는 사용자 ID로 충전했을 때, 예외가 발생하거나 기본값(0)이 반환되는지 확인
+        // when (API 호출)
+        mockMvc.perform(patch("/point/{id}/charge", userId)
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(String.valueOf(chargePointAmount)))
+          // then (응답 검증)
+          .andExpect(status().isOk())
+          .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+          .andExpect(jsonPath("$.id").value(userId))
+          .andExpect(jsonPath("$.point").value(1000L));
     }
 
     @Test
