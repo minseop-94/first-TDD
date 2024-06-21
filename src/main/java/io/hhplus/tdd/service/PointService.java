@@ -5,11 +5,13 @@ import io.hhplus.tdd.exception.InsufficientBalanceException;
 import io.hhplus.tdd.point.UserPoint;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.stereotype.Service;
-
-import java.util.concurrent.locks.Lock;
+import org.springframework.transaction.annotation.Isolation;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @Log4j2
+// TODO(loso): Transactional "격리 수준" 공부하기. 
+@Transactional(isolation = Isolation.REPEATABLE_READ)
 public class PointService {
   // TODO(loso): Domain <-> Entity, mapping 로직 추가하기.
   private final UserPointTable userPointTable;
@@ -22,8 +24,8 @@ public class PointService {
   public synchronized UserPoint charge(long userId, long chargePointAmount) {
     if(chargePointAmount <= 0) throw new IllegalArgumentException();
 
-    Lock lock = userPointTable.getLock();
-    lock.lock();
+//    Lock lock = userPointTable.getLock();
+//    lock.lock();
     UserPoint originPoint = new UserPoint(0, 0, 0);
 
     try {
@@ -38,7 +40,7 @@ public class PointService {
 //      log.error("포인트 충전시 에러 발생 : " + e.getStackTrace());
 //    }
     finally {
-      lock.unlock();
+//      lock.unlock();
     }
 
 //    return originPoint;
@@ -55,8 +57,8 @@ public class PointService {
   public synchronized UserPoint use(long userId, long point) {
     if(point <= 0) throw new IllegalArgumentException();
 
-    Lock lock = userPointTable.getLock();
-    lock.lock();
+//    Lock lock = userPointTable.getLock();
+//    lock.lock();
 
     try {
       UserPoint originPoint = userPointTable.selectById(userId);
@@ -65,7 +67,7 @@ public class PointService {
       return userPointTable.insertOrUpdate(userId, originPoint.point() - point);
 
     } finally {
-      lock.unlock();
+//      lock.unlock();
     }
   }
 }

@@ -28,6 +28,7 @@ dependencies {
     annotationProcessor(libs.spring.boot.configuration.processor)
     testImplementation(libs.spring.boot.starter.test)
 //    testImplementation("org.assertj:assertj-core:3.23.1")
+    implementation("org.springframework:spring-tx")
 }
 
 // about source and compilation
