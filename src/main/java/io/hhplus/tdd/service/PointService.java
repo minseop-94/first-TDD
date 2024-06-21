@@ -8,9 +8,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.concurrent.locks.Lock;
+
 @Service
 @Log4j2
-// TODO(loso): Transactional "격리 수준" 공부하기. 
+// TODO(loso): Transactional "격리 수준" 공부하기.
 @Transactional(isolation = Isolation.REPEATABLE_READ)
 public class PointService {
   // TODO(loso): Domain <-> Entity, mapping 로직 추가하기.
@@ -21,11 +23,11 @@ public class PointService {
   }
 
   // FIXME(loso): 메서드 이름이 조금 아쉽다. charge() -> chargePoint() 이게 조금더 가독성이 있지 않을까?
-  public synchronized UserPoint charge(long userId, long chargePointAmount) {
+  public UserPoint charge(long userId, long chargePointAmount) {
     if(chargePointAmount <= 0) throw new IllegalArgumentException();
 
-//    Lock lock = userPointTable.getLock();
-//    lock.lock();
+    Lock lock = userPointTable.getLock();
+    lock.lock();
     UserPoint originPoint = new UserPoint(0, 0, 0);
 
     try {
@@ -40,7 +42,7 @@ public class PointService {
 //      log.error("포인트 충전시 에러 발생 : " + e.getStackTrace());
 //    }
     finally {
-//      lock.unlock();
+      lock.unlock();
     }
 
 //    return originPoint;
@@ -49,16 +51,16 @@ public class PointService {
   // TODO(loso): synchronized 에 대해 공부하기.
   // 현재: 한 번에 하나의 스레드만 이 메서드를 실행할 수 있도록 보장.
 
-  public synchronized UserPoint getPoint(long userId) {
+  public UserPoint getPoint(long userId) {
     return userPointTable.selectById(userId);
   }
 
 
-  public synchronized UserPoint use(long userId, long point) {
+  public UserPoint use(long userId, long point) {
     if(point <= 0) throw new IllegalArgumentException();
 
-//    Lock lock = userPointTable.getLock();
-//    lock.lock();
+    Lock lock = userPointTable.getLock();
+    lock.lock();
 
     try {
       UserPoint originPoint = userPointTable.selectById(userId);
@@ -67,7 +69,7 @@ public class PointService {
       return userPointTable.insertOrUpdate(userId, originPoint.point() - point);
 
     } finally {
-//      lock.unlock();
+      lock.unlock();
     }
   }
 }
