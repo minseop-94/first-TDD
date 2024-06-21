@@ -14,19 +14,23 @@ public class PointService {
     this.userPointTable = userPointTable;
   }
 
-  public UserPoint charge(long userId, long chargePointAmount) {
+  // TODO(loso): 메서드 이름이 조금 아쉽다. charge() -> chargePoint() 이게 조금더 가독성이 있지 않을까?
+  public synchronized UserPoint charge(long userId, long chargePointAmount) {
     if(chargePointAmount <= 0) throw new IllegalArgumentException();
 
     UserPoint originPoint = userPointTable.selectById(userId);
     return userPointTable.insertOrUpdate(userId, originPoint.point() + chargePointAmount);
   }
 
-  public UserPoint getPoint(long userId) {
+  // TODO(loso): synchronized 에 대해 공부하기.
+  // 현재: 한 번에 하나의 스레드만 이 메서드를 실행할 수 있도록 보장.
+
+  public synchronized UserPoint getPoint(long userId) {
     return userPointTable.selectById(userId);
   }
 
 
-  public UserPoint use(long userId, long point) {
+  public synchronized UserPoint use(long userId, long point) {
     if(point <= 0) throw new IllegalArgumentException();
 
     UserPoint originPoint = userPointTable.selectById(userId);
