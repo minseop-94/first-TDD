@@ -42,4 +42,9 @@ public class UserPointTable {
 
         }
     }
+
+    public Lock getLock() {
+        return lock;
+    }
+
 }
